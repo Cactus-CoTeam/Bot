@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from database_connect import Base
+from dao.database_connect import Base
 
 
 class User(Base):

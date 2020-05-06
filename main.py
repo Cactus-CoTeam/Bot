@@ -2,7 +2,7 @@ from telegram.ext import Updater
 
 from controller.home_controller import HomeController
 from config import BotConfig
-from database_connect import engine
+from dao.database_connect import engine
 from model.models import Base
 
 if __name__ == '__main__':
