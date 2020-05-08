@@ -14,7 +14,7 @@ SIGN_UP, HELP = range(2)
 ADD_ADDRESS, UPDATE_ADDRESS, REMOVE_ADDRESS, FIND_MEDICINE = range(2, 6)
 
 # Meta states
-SELECT_ACTION, TYPING, STOPPING, SHOWING = range(6, 10)
+SELECT_ACTION, TYPING, HOME, STOP = range(6, 10)
 
 # Shortcut for ConversationHandler.END
 END = ConversationHandler.END
@@ -27,59 +27,69 @@ class HomeController:
         self.__process_handlers()
 
     def start(self, update, context):
-        update.message.reply_text('Здравствуйте!\n\nЗдесь должно быть текст приветствие и инструкция ...\n')
-
-        user = get_user(update.message.from_user.id)
+        from_user = update.message.from_user
+        text = 'Select an action:'
+        buttons = [[
+            InlineKeyboardButton(text='Find Medicine', callback_data=FIND_MEDICINE),
+            InlineKeyboardButton(text='Update Location', callback_data=UPDATE_ADDRESS)
+        ]]
+        user = get_user(from_user.id)
         if user is None:
-            buttons = [
-                [InlineKeyboardButton(text='Sign Up', callback_data=SIGN_UP)],
-                [InlineKeyboardButton(text='Stop', callback_data=END)]
-            ]
-            update.message.reply_text(text='Please sign up first!', reply_markup=InlineKeyboardMarkup(buttons))
-        else:
-            buttons = [
-                [InlineKeyboardButton(text='Find Medicine...', callback_data=FIND_MEDICINE)],
-                [InlineKeyboardButton(text='Help', callback_data=HELP)]
-            ]
-            update.message.reply_text(text=f'Welcome back {user.name}!', reply_markup=InlineKeyboardMarkup(buttons))
+            buttons = [[InlineKeyboardButton(text='Sign Up', callback_data=SIGN_UP)]]
+            text = 'Здравствуйте!\n\nЗдесь должно быть текст приветствие и инструкция ...\n\nSelect an action:'
+        buttons.append([InlineKeyboardButton(text='Help', callback_data=HELP)])
+        update.message.reply_text(text=text, reply_markup=InlineKeyboardMarkup(buttons))
+        print(from_user)
+        context.user_data['user'] = from_user
 
         return SELECT_ACTION
 
     def sign_up(self, update, context):
-        # CallbackQueries need to be answered, even if no notification to the user is needed
-        # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-        if update.callback_query.data == str(SIGN_UP):
-            update.callback_query.edit_message_text('Please enter your address')
-        else:
-            update.callback_query.edit_message_text('Ok, bye!')
+        user = context.user_data['user']
+        add_user(user.id, user.first_name, user.last_name)
+        # TODO add user and location
+        update.callback_query.edit_message_text('Please enter full name')
+        return HOME
+
+    def find_medicine(self, update, context):
+        # TODO search medicine
+        update.callback_query.edit_message_text('Find medicine feature is coming soon...')
+        return HOME
+
+    def update_address(self, update, context):
+        # TODO update address
+        update.callback_query.edit_message_text('Update location feature is coming soon...')
+        return HOME
 
     def help(self, update, context):
-        update.message.reply_text('Here should be some useful information ...\nUse /start to test this bot.')
+        update.callback_query.answer()
+        update.callback_query.edit_message_text('Here should be some useful information ...\n\nUse /start to test this bot.')
+        return HOME
 
     def cancel(self, update, context):
         user = update.message.from_user
         logger.info("User %s canceled the conversation.", user.first_name)
         update.message.reply_text('Bye! I hope we can talk again some day.', reply_markup=ReplyKeyboardRemove())
-
         return END
 
     def error(self, update, context):
-        logger.warning('Update "%s" caused error "%s"', update, context.error)
+        logger.warning('Update error: "%s" Caused error: "%s"', update, context.error)
 
     def __process_handlers(self):
-        # conversation_handler = ConversationHandler(
-        #     entry_points=[CommandHandler('start', self.start)],
-        #     states={
-        #         SIGN_UP: [CallbackQueryHandler(self.sign_up)],
-        #         FIND_MEDICINE: [CommandHandler('help', self.help)],
-        #         # SELECT_ACTION: [MessageHandler(Filters.text, self.sign_up), CommandHandler('help', self.help)],
-        #         HELP: [CommandHandler('help', help)]
-        #     },
-        #     fallbacks=[CommandHandler('stop', self.cancel)]
-        # )
-        # self.dispatcher.add_handler(conversation_handler)
-        self.dispatcher.add_handler(CommandHandler('start', self.start))
-        self.dispatcher.add_handler(CallbackQueryHandler(self.sign_up))
-        self.dispatcher.add_handler(CommandHandler('help', self.help))
-        self.dispatcher.add_handler(CommandHandler('stop', self.help))
+        selection_handlers = [
+            CallbackQueryHandler(self.sign_up, pattern='^' + str(SIGN_UP) + '$'),
+            CallbackQueryHandler(self.find_medicine, pattern='^' + str(FIND_MEDICINE) + '$'),
+            CallbackQueryHandler(self.update_address, pattern='^' + str(UPDATE_ADDRESS) + '$'),
+            CallbackQueryHandler(self.help, pattern='^' + str(HELP) + '$'),
+        ]
+        conversation_handler = ConversationHandler(
+            entry_points=[CommandHandler('start', self.start), CommandHandler('stop', self.cancel)],
+            states={
+                SELECT_ACTION: selection_handlers,
+                HELP: [CommandHandler('help', self.help)],
+                HOME: [CommandHandler('start', self.start)]
+            },
+            fallbacks=[CommandHandler('stop', self.cancel)]
+        )
+        self.dispatcher.add_handler(conversation_handler)
         self.dispatcher.add_error_handler(self.error)
