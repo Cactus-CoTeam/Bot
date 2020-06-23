@@ -6,10 +6,10 @@ import numpy as np
 
 @dataclass
 class Item:
-    item_id: int
-    item_type: str
-    price: float
-    count: int
+    item_id: int = None
+    item_type: str = None
+    price: float = None
+    count: int = None
 
     @staticmethod
     def make_item(item: dict):
@@ -26,14 +26,13 @@ class ShoppingCart:
         self.items: List[Item]
 
     @staticmethod
-    def add_item(self):
+    def add_item(item: Item):
         pass
 
     @staticmethod
-    def remove_item(self):
+    def remove_item(item: Item):
         pass
 
-    @staticmethod
     def remove_all(self):
         self.items = None
 
