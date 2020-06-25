@@ -23,7 +23,7 @@ class MedParse:
     def get_inform(self):
         # search_str - search string
         # sreg - city (region)
-        # dist - district
+        # dist - area
         data = {
             'free_str': self._search_str,
             'sreg': self.__region,
@@ -67,21 +67,21 @@ class MedParse:
         if method == 'GET':
             return requests.get(
                 url=request_url,
-                timeout=1,
+                timeout=3,
                 allow_redirects=True).content.decode('utf-8')
         elif method == 'POST':
             return requests.post(
                 url=request_url,
-                timeout=1,
+                timeout=3,
                 allow_redirects=True,
                 data=data).content.decode('utf-8')
 
 
-if __name__ == '__main__':
-    url = URL_SEARCH
-    sreg = 78
-    dist = 9
-    search_str = 'парацетамол'
-    med_parse = MedParse(sreg, dist, search_str)
-    print(med_parse)
-    print(med_parse.get_inform())
+# if __name__ == '__main__':
+#     url = URL_SEARCH
+#     sreg = 78
+#     dist = 9
+#     search_str = 'парацетамол'
+#     med_parse = MedParse(sreg, dist, search_str)
+#     print(med_parse)
+#     print(med_parse.get_inform())
