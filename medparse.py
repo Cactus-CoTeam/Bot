@@ -1,9 +1,10 @@
 import requests
+
+
 from requests.adapters import HTTPAdapter
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from lxml import etree
-from urllib3.util.retry import Retry
 from constants import URL_SEARCH, XPATH_URLS
 
 
@@ -22,21 +23,19 @@ class MedParse:
     def get_inform(self):
         # search_str - search string
         # sreg - city (region)
-        # dist - district ()
+        # dist - district
         data = {
             'free_str': self._search_str,
             'sreg': self.__region,
             'dist': self.__area
         }
         response = self.request_with_retry('POST', self.__url_search, data)
-        # requests.post(self.__url_search, data, allow_redirects=True, max_retries=3, dely_between_retries=3).content.decode('utf-8')
         soup = BeautifulSoup(response, 'lxml')
         options = soup.select('option')
         if options:
             href = options[1]['value']
             url_next = urljoin(self.__url_search, href)
             response = self.request_with_retry('GET', request_url=url_next)
-            # response = requests.get(url_next).content.decode('utf-8')
         results = self.get_data_from_table(response, data)
         return results
 
@@ -63,18 +62,19 @@ class MedParse:
     def request_with_retry(self, method, request_url, data=None):
         session = requests.Session()
 
-        retries = Retry(
-            total=5,
-            backoff_factor=0.7,
-            status_forcelist=[500, 502, 503, 504]
-
-        )
         session.mount('https://', HTTPAdapter(max_retries=5))
 
         if method == 'GET':
-            return requests.get(url=request_url, timeout=1, allow_redirects=True).content.decode('utf-8')
+            return requests.get(
+                url=request_url,
+                timeout=1,
+                allow_redirects=True).content.decode('utf-8')
         elif method == 'POST':
-            return requests.post(url=request_url, timeout=1, allow_redirects=True, data=data).content.decode('utf-8')
+            return requests.post(
+                url=request_url,
+                timeout=1,
+                allow_redirects=True,
+                data=data).content.decode('utf-8')
 
 
 if __name__ == '__main__':
