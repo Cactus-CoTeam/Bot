@@ -36,7 +36,10 @@ class HomeController:
         user = get_user(from_user.id)
         if user is None:
             buttons = [[InlineKeyboardButton(text='Sign Up', callback_data=SIGN_UP)]]
-            text = 'Здравствуйте!\n\nЗдесь должно быть текст приветствие и инструкция ...\n\nSelect an action:'
+            text = "Добро пожаловать в CureMe. Я твой помощник в мире пилюль и таблеточек.💊 " \
+                   "Помогу найти необходимые лекарства, подскажу где и по какой стоимости их можно приобрести.\n\n" \
+                   "Давай знакомиться! Жми Sign Up.\n" \
+                   "Или посмотри, что я умею! Жми Help"
         buttons.append([InlineKeyboardButton(text='Help', callback_data=HELP)])
         update.message.reply_text(text=text, reply_markup=InlineKeyboardMarkup(buttons))
         print(from_user)
@@ -63,7 +66,8 @@ class HomeController:
 
     def help(self, update, context):
         update.callback_query.answer()
-        update.callback_query.edit_message_text('Here should be some useful information ...\n\nUse /start to test this bot.')
+        update.callback_query.edit_message_text("Вот, что я умею:\n\nДавай поменяем адрес!\n/updatelocation\n\n" +
+            "Приступим к поиску!\n/findmedicine\n\nЧем я могу тебе помочь?\n/help")
         return HOME
 
     def cancel(self, update, context):
