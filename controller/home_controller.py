@@ -28,7 +28,10 @@ class HomeController:
 
     def start(self, update, context):
         from_user = update.message.from_user
-        text = 'Select an action:'
+        text = "Я твой помощник в мире пилюль и таблеточек.💊 " \
+               "Помогу найти необходимые лекарства, подскажу где и по какой стоимости их можно приобрести.\n\n" \
+               "Давай знакомиться! Жми Sign Up.\n" \
+               "Или посмотри, что я умею! Жми Help"
         buttons = [[
             InlineKeyboardButton(text='Find Medicine', callback_data=FIND_MEDICINE),
             InlineKeyboardButton(text='Update Location', callback_data=UPDATE_ADDRESS)
@@ -36,10 +39,7 @@ class HomeController:
         user = get_user(from_user.id)
         if user is None:
             buttons = [[InlineKeyboardButton(text='Sign Up', callback_data=SIGN_UP)]]
-            text = "Добро пожаловать в CureMe. Я твой помощник в мире пилюль и таблеточек.💊 " \
-                   "Помогу найти необходимые лекарства, подскажу где и по какой стоимости их можно приобрести.\n\n" \
-                   "Давай знакомиться! Жми Sign Up.\n" \
-                   "Или посмотри, что я умею! Жми Help"
+            text = "Добро пожаловать в CureMe. " + text
         buttons.append([InlineKeyboardButton(text='Help', callback_data=HELP)])
         update.message.reply_text(text=text, reply_markup=InlineKeyboardMarkup(buttons))
         print(from_user)
